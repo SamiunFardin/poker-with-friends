@@ -1,11 +1,12 @@
 import time
+
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from poker_engine import GameRoom
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'poker-secret-key-render'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
 
 rooms = {}  # room_id -> GameRoom
 
