@@ -104,10 +104,15 @@
         }
         .lounge-header p { color: #95a5a6; font-size: 14px; margin: 0; }
 
-        .lobby-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        @media (max-width: 768px) { .lobby-grid { grid-template-columns: 1fr; } }
+        .home-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 650px; margin: 40px auto; }
+        @media (max-width: 768px) { .home-menu-grid { grid-template-columns: 1fr; } }
 
-        .avatar-picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+        .home-menu-card {
+            background: #0d0f14; padding: 30px 20px; border-radius: 16px; border: 1px solid #262a36; text-align: center; cursor: pointer; transition: all 0.3s;
+        }
+        .home-menu-card:hover { border-color: var(--accent-gold); transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
+
+        .avatar-picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; justify-content: center; }
         .avatar-opt {
             font-size: 22px; padding: 6px 10px; background: #0d0f14; border: 2px solid transparent; border-radius: 10px; cursor: pointer; transition: all 0.2s;
         }
@@ -200,7 +205,7 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px);
         }
         .modal-box {
-            background: #141822; padding: 24px; border-radius: 18px; max-width: 580px; width: 92%; max-height: 90vh; overflow-y: auto; text-align: center; border: 2px solid var(--accent-gold); box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+            background: #141822; padding: 24px; border-radius: 18px; max-width: 620px; width: 92%; max-height: 90vh; overflow-y: auto; text-align: center; border: 2px solid var(--accent-gold); box-shadow: 0 15px 40px rgba(0,0,0,0.9);
         }
         #qrcode-canvas { margin: 15px auto; background: #fff; padding: 10px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .copy-link-box { display: flex; gap: 8px; margin-top: 10px; }
@@ -218,82 +223,112 @@
 </div>
 
 <div class="container">
-    <div id="lobby-section" class="card-panel">
+    <!-- HOMEPAGE SECTION (2 Main Buttons) -->
+    <div id="home-section" class="card-panel">
         <div class="lounge-header">
             <h1>♠ Texas Hold'em Lounge ♣</h1>
             <p>Step up to the high-stakes table. Host private rooms or join friends instantly.</p>
         </div>
-        
-        <div class="lobby-grid">
-            <div style="background: #0d0f14; padding: 18px; border-radius: 12px; border: 1px solid #262a36;">
-                <h3 style="color: var(--accent-gold); margin-top: 0; display:flex; align-items:center; gap:8px;">🎲 Host Private Table</h3>
-                <input type="text" id="host-room-id" placeholder="Room Code (e.g. VIPCLUB)">
-                <input type="text" id="host-name" placeholder="Host Admin Name" value="Host Admin">
-                
-                <label style="font-size: 13px; color: #aaa;">Turn Timer:</label>
-                <select id="turn-time-select">
-                    <option value="15">15 Seconds</option>
-                    <option value="30" selected>30 Seconds</option>
-                    <option value="45">45 Seconds</option>
-                    <option value="60">1 Minute</option>
-                    <option value="120">2 Minutes</option>
-                    <option value="300">5 Minutes</option>
-                    <option value="600">10 Minutes</option>
-                </select>
-
-                <label style="font-size: 13px; color: #aaa;">Select Avatar:</label>
-                <div class="avatar-picker" id="host-avatar-picker">
-                    <span class="avatar-opt selected" data-avatar="👑">👑</span>
-                    <span class="avatar-opt" data-avatar="😎">😎</span>
-                    <span class="avatar-opt" data-avatar="🎩">🎩</span>
-                    <span class="avatar-opt" data-avatar="🔥">🔥</span>
-                    <span class="avatar-opt" data-avatar="🎲">🎲</span>
-                    <span class="avatar-opt" data-avatar="🦁">🦁</span>
-                    <span class="avatar-opt" data-avatar="🤖">🤖</span>
-                    <span class="avatar-opt" data-avatar="🎭">🎭</span>
-                    <span class="avatar-opt" data-avatar="🦊">🦊</span>
-                    <span class="avatar-opt" data-avatar="🐉">🐉</span>
-                    <span class="avatar-opt" data-avatar="👽">👽</span>
-                    <span class="avatar-opt" data-avatar="🥷">🥷</span>
-                </div>
-
-                <div style="margin: 12px 0;">
-                    <label style="font-size: 14px; cursor: pointer; color: #fff; display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="host-is-playing" onchange="toggleHostBuyin(this.checked)"> Play in game as active player
-                    </label>
-                </div>
-                <input type="number" id="host-buyin" class="hidden" placeholder="Host Starting Chips" value="1000">
-                
-                <button id="btn-create-room" class="btn-gold" style="width: 100%; margin-top: 12px;">Launch Room</button>
+        <div class="home-menu-grid">
+            <div class="home-menu-card" onclick="switchLobbyView('create')">
+                <div style="font-size: 40px; margin-bottom: 10px;">🎲</div>
+                <h3 style="color: var(--accent-gold); margin: 5px 0;">Create Room</h3>
+                <p style="color: #95a5a6; font-size: 13px; margin: 0;">Set up a private table as Host.</p>
             </div>
-
-            <div style="background: #0d0f14; padding: 18px; border-radius: 12px; border: 1px solid #262a36;">
-                <h3 style="color: var(--btn-green); margin-top: 0; display:flex; align-items:center; gap:8px;">♠ Join Active Table</h3>
-                <input type="text" id="join-room-id" placeholder="Enter Room Code">
-                <input type="text" id="join-name" placeholder="Your Player Name">
-                <input type="number" id="join-buyin" placeholder="Starting Chips" value="1000">
-
-                <label style="font-size: 13px; color: #aaa;">Select Avatar:</label>
-                <div class="avatar-picker" id="join-avatar-picker">
-                    <span class="avatar-opt selected" data-avatar="😎">😎</span>
-                    <span class="avatar-opt" data-avatar="🎲">🎲</span>
-                    <span class="avatar-opt" data-avatar="🦁">🦁</span>
-                    <span class="avatar-opt" data-avatar="🤖">🤖</span>
-                    <span class="avatar-opt" data-avatar="👑">👑</span>
-                    <span class="avatar-opt" data-avatar="🎩">🎩</span>
-                    <span class="avatar-opt" data-avatar="🔥">🔥</span>
-                    <span class="avatar-opt" data-avatar="🎭">🎭</span>
-                    <span class="avatar-opt" data-avatar="🦊">🦊</span>
-                    <span class="avatar-opt" data-avatar="🐉">🐉</span>
-                    <span class="avatar-opt" data-avatar="👽">👽</span>
-                    <span class="avatar-opt" data-avatar="🥷">🥷</span>
-                </div>
-
-                <button id="btn-join-room" class="btn-green" style="width: 100%; margin-top: 12px;">Take a Seat</button>
+            <div class="home-menu-card" onclick="switchLobbyView('join')">
+                <div style="font-size: 40px; margin-bottom: 10px;">♠</div>
+                <h3 style="color: var(--btn-green); margin: 5px 0;">Join Room</h3>
+                <p style="color: #95a5a6; font-size: 13px; margin: 0;">Enter an active game with friends.</p>
             </div>
         </div>
     </div>
 
+    <!-- CREATE ROOM INFO PAGE -->
+    <div id="create-section" class="card-panel hidden">
+        <div class="lounge-header">
+            <h1>🎲 Create Private Table</h1>
+            <p>Configure your host settings and room rules.</p>
+        </div>
+        <div style="background: #0d0f14; padding: 22px; border-radius: 12px; border: 1px solid #262a36; max-width: 550px; margin: 0 auto;">
+            <input type="text" id="host-room-id" placeholder="Room Code (e.g. VIPCLUB)">
+            <input type="text" id="host-name" placeholder="Host Admin Name" value="Host Admin">
+            
+            <label style="font-size: 13px; color: #aaa;">Turn Timer:</label>
+            <select id="turn-time-select">
+                <option value="15">15 Seconds</option>
+                <option value="30" selected>30 Seconds</option>
+                <option value="45">45 Seconds</option>
+                <option value="60">1 Minute</option>
+                <option value="120">2 Minutes</option>
+                <option value="300">5 Minutes</option>
+                <option value="600">10 Minutes</option>
+            </select>
+
+            <label style="font-size: 13px; color: #aaa;">Select Avatar:</label>
+            <div class="avatar-picker" id="host-avatar-picker">
+                <span class="avatar-opt selected" data-avatar="👑">👑</span>
+                <span class="avatar-opt" data-avatar="😎">😎</span>
+                <span class="avatar-opt" data-avatar="🎩">🎩</span>
+                <span class="avatar-opt" data-avatar="🔥">🔥</span>
+                <span class="avatar-opt" data-avatar="🎲">🎲</span>
+                <span class="avatar-opt" data-avatar="🦁">🦁</span>
+                <span class="avatar-opt" data-avatar="🤖">🤖</span>
+                <span class="avatar-opt" data-avatar="🎭">🎭</span>
+                <span class="avatar-opt" data-avatar="🦊">🦊</span>
+                <span class="avatar-opt" data-avatar="🐉">🐉</span>
+                <span class="avatar-opt" data-avatar="👽">👽</span>
+                <span class="avatar-opt" data-avatar="🥷">🥷</span>
+            </div>
+
+            <div style="margin: 12px 0;">
+                <label style="font-size: 14px; cursor: pointer; color: #fff; display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="host-is-playing" onchange="toggleHostBuyin(this.checked)"> Play in game as active player
+                </label>
+            </div>
+            <input type="number" id="host-buyin" class="hidden" placeholder="Host Starting Chips" value="1000">
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-blue" style="flex: 1;" onclick="switchLobbyView('home')">Back</button>
+                <button id="btn-create-room" class="btn-gold" style="flex: 2;">Launch Room</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JOIN ROOM INFO PAGE -->
+    <div id="join-section" class="card-panel hidden">
+        <div class="lounge-header">
+            <h1>♠ Join Active Table</h1>
+            <p>Enter your player name and room credentials.</p>
+        </div>
+        <div style="background: #0d0f14; padding: 22px; border-radius: 12px; border: 1px solid #262a36; max-width: 550px; margin: 0 auto;">
+            <input type="text" id="join-room-id" placeholder="Enter Room Code">
+            <input type="text" id="join-name" placeholder="Your Player Name">
+            <input type="number" id="join-buyin" placeholder="Starting Chips" value="1000">
+
+            <label style="font-size: 13px; color: #aaa;">Select Avatar:</label>
+            <div class="avatar-picker" id="join-avatar-picker">
+                <span class="avatar-opt selected" data-avatar="😎">😎</span>
+                <span class="avatar-opt" data-avatar="🎲">🎲</span>
+                <span class="avatar-opt" data-avatar="🦁">🦁</span>
+                <span class="avatar-opt" data-avatar="🤖">🤖</span>
+                <span class="avatar-opt" data-avatar="👑">👑</span>
+                <span class="avatar-opt" data-avatar="🎩">🎩</span>
+                <span class="avatar-opt" data-avatar="🔥">🔥</span>
+                <span class="avatar-opt" data-avatar="🎭">🎭</span>
+                <span class="avatar-opt" data-avatar="🦊">🦊</span>
+                <span class="avatar-opt" data-avatar="🐉">🐉</span>
+                <span class="avatar-opt" data-avatar="👽">👽</span>
+                <span class="avatar-opt" data-avatar="🥷">🥷</span>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-blue" style="flex: 1;" onclick="switchLobbyView('home')">Back</button>
+                <button id="btn-join-room" class="btn-green" style="flex: 2;">Take a Seat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME TABLE SECTION -->
     <div id="game-section" class="card-panel hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <h2 style="margin: 0;">Room: <span id="display-room-id" style="color: var(--accent-gold-bright);"></span></h2>
@@ -452,6 +487,24 @@
         });
     }
 
+    function switchLobbyView(viewName) {
+        document.getElementById('home-section').classList.add('hidden');
+        document.getElementById('create-section').classList.add('hidden');
+        document.getElementById('join-section').classList.add('hidden');
+
+        if (viewName === 'home') document.getElementById('home-section').classList.remove('hidden');
+        else if (viewName === 'create') document.getElementById('create-section').classList.remove('hidden');
+        else if (viewName === 'join') document.getElementById('join-section').classList.remove('hidden');
+    }
+
+    // Auto-route invite link or room param directly to Join View
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRoom = urlParams.get('room');
+    if (urlRoom) {
+        document.getElementById('join-room-id').value = urlRoom.toUpperCase();
+        switchLobbyView('join');
+    }
+
     document.querySelectorAll('#host-avatar-picker .avatar-opt').forEach(el => {
         el.addEventListener('click', () => {
             document.querySelectorAll('#host-avatar-picker .avatar-opt').forEach(a => a.classList.remove('selected'));
@@ -482,7 +535,9 @@
         if (data.success) {
             currentRoom = data.room_id;
             isHost = data.is_host;
-            document.getElementById('lobby-section').classList.add('hidden');
+            document.getElementById('home-section').classList.add('hidden');
+            document.getElementById('create-section').classList.add('hidden');
+            document.getElementById('join-section').classList.add('hidden');
             document.getElementById('game-section').classList.remove('hidden');
             document.getElementById('display-room-id').innerText = currentRoom;
 
@@ -653,25 +708,37 @@
 
         let ccHtml = (lastHandDataObj.community_cards || []).map(c => renderCardGraphic(c)).join('');
         let playersHtml = (lastHandDataObj.players_show || []).map(p => {
-            let cards = (p.hole_cards || []).map(c => renderCardGraphic(c)).join('');
+            let holeCardsHtml = (p.hole_cards || []).map(c => renderCardGraphic(c)).join('');
+            let bestFiveHtml = (p.best_five || []).map(c => renderCardGraphic(c)).join('');
+            let payoutStr = (p.payout && p.payout > 0) ? ` <span style="color:#2ecc71; font-weight:bold;">(+${p.payout.toFixed(0)})</span>` : '';
             return `
-                <div style="background:#1a1d26; padding:8px; border-radius:8px; margin:6px 0; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <strong>${p.avatar || '😎'} ${p.name}</strong>
-                        <div style="font-size:11px; color:var(--accent-gold);">${p.eval}</div>
+                <div style="background:#1a1d26; padding:10px; border-radius:8px; margin:8px 0; text-align:left;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <div>
+                            <strong>${p.avatar || '😎'} ${p.name}</strong>${payoutStr}
+                            <div style="font-size:12px; color:var(--accent-gold-bright);">Evaluation: ${p.eval}</div>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:3px;">${cards}</div>
+                    ${p.folded ? '<div style="font-size:12px; color:#e74c3c;">Folded</div>' : `
+                        <div style="font-size:11px; color:#aaa; margin-top:4px;">Hole Cards:</div>
+                        <div style="display:flex; gap:3px; margin-bottom:4px;">${holeCardsHtml}</div>
+                        ${bestFiveHtml ? `
+                            <div style="font-size:11px; color:var(--accent-gold); margin-top:4px;">Best 5-Card Hand:</div>
+                            <div style="display:flex; gap:3px;">${bestFiveHtml}</div>
+                        ` : ''}
+                    `}
                 </div>
             `;
         }).join('');
 
-        showModal('Last Hand Complete Breakdown', `
+        showModal('Hand Result Breakdown & Payouts', `
             <div style="margin-bottom:12px;">
                 <h4 style="margin:5px 0; color:var(--accent-gold-bright);">Community Board</h4>
                 <div style="display:flex; justify-content:center; gap:4px;">${ccHtml || 'None'}</div>
+                <p style="margin:6px 0; font-size:13px; color:#2ecc71; font-weight:bold;">Total Pot: $${lastHandDataObj.pot.toFixed(0)} (${(lastHandDataObj.split_amount || 0).toFixed(0)} per winner)</p>
             </div>
-            <div style="text-align:left;">
-                <h4 style="margin:5px 0; color:#fff;">Players & Evaluations</h4>
+            <div>
+                <h4 style="margin:5px 0; color:#fff;">Players & Best 5-Card Combinations</h4>
                 ${playersHtml}
             </div>
         `);
@@ -744,7 +811,9 @@
 
     socket.on('room_created', (data) => {
         isHost = true;
-        document.getElementById('lobby-section').classList.add('hidden');
+        document.getElementById('home-section').classList.add('hidden');
+        document.getElementById('create-section').classList.add('hidden');
+        document.getElementById('join-section').classList.add('hidden');
         document.getElementById('game-section').classList.remove('hidden');
         document.getElementById('host-controls').classList.remove('hidden');
         document.getElementById('btn-show-qr').classList.remove('hidden');
@@ -755,10 +824,17 @@
     socket.on('join_pending', (data) => showModal('Request Sent', `<p>${data.message}</p>`));
 
     socket.on('join_approved', (data) => {
-        document.getElementById('lobby-section').classList.add('hidden');
+        document.getElementById('home-section').classList.add('hidden');
+        document.getElementById('create-section').classList.add('hidden');
+        document.getElementById('join-section').classList.add('hidden');
         document.getElementById('game-section').classList.remove('hidden');
         document.getElementById('btn-add-cash-req').classList.remove('hidden');
         document.getElementById('display-room-id').innerText = data.room_id;
+    });
+
+    socket.on('join_rejected', (data) => {
+        showModal('Request Declined', `<p style="color:#e74c3c;">${data.message}</p>`);
+        switchLobbyView('home');
     });
 
     socket.on('kicked', (data) => {
@@ -841,25 +917,55 @@
             } else {
                 joins.forEach(p => {
                     const card = document.createElement('div');
-                    card.style.cssText = 'background:#1a1d26; padding:6px 10px; margin:4px 0; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
+                    card.style.cssText = 'background:#1a1d26; padding:8px 10px; margin:4px 0; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
                     card.innerHTML = `<span><strong>Join:</strong> ${p.avatar || ''} ${p.name} ($${p.buy_in})</span>`;
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-green';
-                    btn.innerText = 'Approve';
-                    btn.onclick = () => { playSFX('chip'); socket.emit('approve_join', { room_id: currentRoom, sid: p.sid }); };
-                    card.appendChild(btn);
+                    
+                    const btnGroup = document.createElement('div');
+                    btnGroup.style.display = 'flex';
+                    btnGroup.style.gap = '4px';
+
+                    const appBtn = document.createElement('button');
+                    appBtn.className = 'btn-green';
+                    appBtn.style.padding = '5px 10px';
+                    appBtn.innerText = 'Approve';
+                    appBtn.onclick = () => { playSFX('chip'); socket.emit('approve_join', { room_id: currentRoom, sid: p.sid }); };
+
+                    const rejBtn = document.createElement('button');
+                    rejBtn.className = 'btn-red';
+                    rejBtn.style.padding = '5px 10px';
+                    rejBtn.innerText = 'Reject';
+                    rejBtn.onclick = () => { playSFX('card'); socket.emit('reject_join', { room_id: currentRoom, sid: p.sid }); };
+
+                    btnGroup.appendChild(appBtn);
+                    btnGroup.appendChild(rejBtn);
+                    card.appendChild(btnGroup);
                     listContainer.appendChild(card);
                 });
 
                 cashes.forEach(c => {
                     const card = document.createElement('div');
-                    card.style.cssText = 'background:#1a1d26; padding:6px 10px; margin:4px 0; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
+                    card.style.cssText = 'background:#1a1d26; padding:8px 10px; margin:4px 0; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
                     card.innerHTML = `<span><strong>Cash:</strong> ${c.name} (+$${c.amount})</span>`;
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-green';
-                    btn.innerText = 'Approve';
-                    btn.onclick = () => { playSFX('chip'); socket.emit('approve_add_cash', { room_id: currentRoom, sid: c.sid, amount: c.amount }); };
-                    card.appendChild(btn);
+                    
+                    const btnGroup = document.createElement('div');
+                    btnGroup.style.display = 'flex';
+                    btnGroup.style.gap = '4px';
+
+                    const appBtn = document.createElement('button');
+                    appBtn.className = 'btn-green';
+                    appBtn.style.padding = '5px 10px';
+                    appBtn.innerText = 'Approve';
+                    appBtn.onclick = () => { playSFX('chip'); socket.emit('approve_add_cash', { room_id: currentRoom, sid: c.sid, amount: c.amount }); };
+
+                    const rejBtn = document.createElement('button');
+                    rejBtn.className = 'btn-red';
+                    rejBtn.style.padding = '5px 10px';
+                    rejBtn.innerText = 'Reject';
+                    rejBtn.onclick = () => { playSFX('card'); socket.emit('reject_add_cash', { room_id: currentRoom, sid: c.sid, amount: c.amount }); };
+
+                    btnGroup.appendChild(appBtn);
+                    btnGroup.appendChild(rejBtn);
+                    card.appendChild(btnGroup);
                     listContainer.appendChild(card);
                 });
             }
@@ -1015,12 +1121,6 @@
     }
 
     socket.on('error', (err) => showModal('Error', `<p>${err.message}</p>`));
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlRoom = urlParams.get('room');
-    if (urlRoom) {
-        document.getElementById('join-room-id').value = urlRoom.toUpperCase();
-    }
 </script>
 </body>
 </html>
