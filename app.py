@@ -129,6 +129,27 @@ def handle_approve_join(data):
         room.pending_joins.remove(pending)
         
         socketio.emit('join_approved', {'room_id': room_id}, to=target_sid)
+        socketio.emit('notification', {'title': 'Player Joined Table', 'message': f"Host approved {pending['name']}'s join request!"}, to=room_id)
+        broadcast_room_state(room_id)
+
+@socketio.on('reject_join')
+def handle_reject_join(data):
+    room_id = data.get('room_id', '').strip().upper()
+    target_sid = data.get('sid')
+
+    if room_id not in rooms:
+        return
+    room = rooms[room_id]
+
+    if request.sid != room.host_sid:
+        return
+
+    pending = next((p for p in room.pending_joins if p['sid'] == target_sid), None)
+    if pending:
+        p_name = pending['name']
+        room.pending_joins.remove(pending)
+        socketio.emit('join_rejected', {'message': 'Your request to join this table was declined by the Host.'}, to=target_sid)
+        socketio.emit('notification', {'title': 'Join Request Rejected', 'message': f"Host rejected {p_name}'s request to join."}, to=room_id)
         broadcast_room_state(room_id)
 
 @socketio.on('leave_game')
@@ -153,8 +174,10 @@ def handle_kick_player(data):
     room = rooms[room_id]
 
     if request.sid == room.host_sid and target_sid in room.players:
+        p_name = room.players[target_sid].name
         room.remove_player(target_sid, reason="Kicked by Host")
         socketio.emit('kicked', {'message': 'You were kicked by the host.'}, to=target_sid)
+        socketio.emit('notification', {'title': 'Player Kicked', 'message': f"Host kicked {p_name} from the table."}, to=room_id)
         broadcast_room_state(room_id)
 
 @socketio.on('discontinue_hand')
@@ -207,8 +230,28 @@ def handle_approve_add_cash(data):
             p = room.players[target_sid]
             p.chips += amount
             p.added_cash += amount
+            socketio.emit('notification', {'title': 'Cash Top-up Approved', 'message': f'Host approved ${amount} cash top-up for {p.name}!'}, to=room_id)
         room.pending_add_cash.remove(req)
-        socketio.emit('notification', {'title': 'Chips Added', 'message': f'Host approved ${amount} chips!'}, to=target_sid)
+        broadcast_room_state(room_id)
+
+@socketio.on('reject_add_cash')
+def handle_reject_add_cash(data):
+    room_id = data.get('room_id', '').strip().upper()
+    target_sid = data.get('sid')
+    amount = float(data.get('amount', 0.0))
+
+    if room_id not in rooms:
+        return
+    room = rooms[room_id]
+
+    if request.sid != room.host_sid:
+        return
+
+    req = next((c for c in room.pending_add_cash if c['sid'] == target_sid and c['amount'] == amount), None)
+    if req:
+        p_name = req['name']
+        room.pending_add_cash.remove(req)
+        socketio.emit('notification', {'title': 'Cash Top-up Declined', 'message': f'Host rejected ${amount} top-up request for {p_name}.'}, to=room_id)
         broadcast_room_state(room_id)
 
 @socketio.on('start_hand')
