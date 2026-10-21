@@ -7,8 +7,8 @@
     <style>
         :root {
             --bg-dark: #0a0c10;
-            --panel-bg: rgba(22, 25, 32, 0.95);
-            --panel-border: rgba(243, 156, 18, 0.25);
+            --panel-bg: rgba(18, 22, 30, 0.88);
+            --panel-border: rgba(243, 156, 18, 0.35);
             --felt-gradient: radial-gradient(ellipse at center, #1e6b3b 0%, #114223 75%, #082112 100%);
             --rim-color: #2b180d;
             --rim-border: #4a2817;
@@ -22,10 +22,10 @@
         }
 
         * { box-sizing: border-box; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg-dark);
-            background-image: radial-gradient(circle at 50% 20%, #182030 0%, #0a0c10 70%);
+            background-color: var(--bg-dark);
             color: #ecf0f1;
             margin: 0;
             padding: 15px;
@@ -33,6 +33,25 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            transition: background-image 0.4s ease-in-out;
+        }
+
+        /* Dynamic Page-Specific Wallpapers */
+        body.view-home {
+            background-image: linear-gradient(rgba(10, 12, 16, 0.65), rgba(10, 12, 16, 0.65)), url("{{ url_for('static', filename='images/home_bg.jpg') }}");
+        }
+        body.view-create {
+            background-image: linear-gradient(rgba(10, 12, 16, 0.65), rgba(10, 12, 16, 0.65)), url("{{ url_for('static', filename='images/create_bg.jpg') }}");
+        }
+        body.view-join {
+            background-image: linear-gradient(rgba(10, 12, 16, 0.65), rgba(10, 12, 16, 0.65)), url("{{ url_for('static', filename='images/join_bg.jpg') }}");
+        }
+        body.view-game {
+            background-image: linear-gradient(rgba(10, 12, 16, 0.55), rgba(10, 12, 16, 0.55)), url("{{ url_for('static', filename='images/game_bg.jpg') }}");
         }
 
         .container { width: 100%; max-width: 1050px; }
@@ -43,8 +62,8 @@
             padding: 22px;
             border-radius: 16px;
             margin-bottom: 20px;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
-            backdrop-filter: blur(8px);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
         }
 
         .hidden { display: none !important; }
@@ -54,7 +73,7 @@
             margin: 8px 0;
             border-radius: 10px;
             border: 1px solid #34495e;
-            background: #0d0f14;
+            background: rgba(13, 15, 20, 0.9);
             color: #fff;
             font-size: 14px;
             width: 100%;
@@ -108,13 +127,13 @@
         @media (max-width: 768px) { .home-menu-grid { grid-template-columns: 1fr; } }
 
         .home-menu-card {
-            background: #0d0f14; padding: 30px 20px; border-radius: 16px; border: 1px solid #262a36; text-align: center; cursor: pointer; transition: all 0.3s;
+            background: rgba(13, 15, 20, 0.85); padding: 30px 20px; border-radius: 16px; border: 1px solid #262a36; text-align: center; cursor: pointer; transition: all 0.3s; backdrop-filter: blur(8px);
         }
         .home-menu-card:hover { border-color: var(--accent-gold); transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.6); }
 
         .avatar-picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; justify-content: center; }
         .avatar-opt {
-            font-size: 22px; padding: 6px 10px; background: #0d0f14; border: 2px solid transparent; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+            font-size: 22px; padding: 6px 10px; background: rgba(13, 15, 20, 0.8); border: 2px solid transparent; border-radius: 10px; cursor: pointer; transition: all 0.2s;
         }
         .avatar-opt.selected { border-color: var(--accent-gold); background: #222a36; transform: scale(1.08); }
 
@@ -214,9 +233,17 @@
         .audio-toggle-badge {
             position: fixed; top: 15px; right: 15px; background: rgba(22, 25, 32, 0.9); border: 1px solid var(--accent-gold); padding: 8px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; z-index: 99; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
+
+        .hint-img-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid var(--accent-gold);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+        }
     </style>
 </head>
-<body>
+<body class="view-home">
 
 <div class="audio-toggle-badge" onclick="toggleAudio()" id="audio-toggle-btn">
     🔊 <span>SFX: On</span>
@@ -249,7 +276,7 @@
             <h1>🎲 Create Private Table</h1>
             <p>Configure your host settings and room rules.</p>
         </div>
-        <div style="background: #0d0f14; padding: 22px; border-radius: 12px; border: 1px solid #262a36; max-width: 550px; margin: 0 auto;">
+        <div style="background: rgba(13, 15, 20, 0.85); padding: 22px; border-radius: 12px; border: 1px solid #262a36; max-width: 550px; margin: 0 auto;">
             <input type="text" id="host-room-id" placeholder="Room Code (e.g. VIPCLUB)">
             <input type="text" id="host-name" placeholder="Host Admin Name" value="Host Admin">
             
@@ -300,7 +327,7 @@
             <h1>♠ Join Active Table</h1>
             <p>Enter your player name and room credentials.</p>
         </div>
-        <div style="background: #0d0f14; padding: 22px; border-radius: 12px; border: 1px solid #262a36; max-width: 550px; margin: 0 auto;">
+        <div style="background: rgba(13, 15, 20, 0.85); padding: 22px; border-radius: 12px; border: 1px solid #262a36; max-width: 550px; margin: 0 auto;">
             <input type="text" id="join-room-id" placeholder="Enter Room Code">
             <input type="text" id="join-name" placeholder="Your Player Name">
             <input type="number" id="join-buyin" placeholder="Starting Chips" value="1000">
@@ -333,6 +360,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <h2 style="margin: 0;">Room: <span id="display-room-id" style="color: var(--accent-gold-bright);"></span></h2>
             <div>
+                <button id="btn-show-hint" class="btn-gold" onclick="openHintModal()">💡 Hint</button>
                 <button id="btn-show-qr" class="btn-blue hidden">QR Code & Link</button>
                 <button id="btn-add-cash-req" class="btn-green hidden">Request Cash</button>
                 <button id="btn-view-last-hand">Last Hand</button>
@@ -340,7 +368,7 @@
             </div>
         </div>
 
-        <div id="host-controls" class="card-panel hidden" style="border: 2px solid var(--accent-gold); background: #0d0f14; margin-top: 15px;">
+        <div id="host-controls" class="card-panel hidden" style="border: 2px solid var(--accent-gold); background: rgba(13, 15, 20, 0.9); margin-top: 15px;">
             <h3 style="color: var(--accent-gold-bright); margin-top: 0;">Host Table Management</h3>
             <button id="btn-start-hand" class="btn-green">Start Next Hand</button>
             <button id="btn-discontinue-hand" class="btn-red">Stop Current Hand</button>
@@ -488,6 +516,7 @@
     }
 
     function switchLobbyView(viewName) {
+        document.body.className = `view-${viewName}`;
         document.getElementById('home-section').classList.add('hidden');
         document.getElementById('create-section').classList.add('hidden');
         document.getElementById('join-section').classList.add('hidden');
@@ -497,7 +526,16 @@
         else if (viewName === 'join') document.getElementById('join-section').classList.remove('hidden');
     }
 
-    // Auto-route invite link or room param directly to Join View
+    function openHintModal() {
+        playSFX('card');
+        const hintImgUrl = "{{ url_for('static', filename='images/hint.jpg') }}";
+        showModal('Game Guide & Rules', `
+            <div class="hint-img-container" style="margin-top: 10px;">
+                <img src="${hintImgUrl}" alt="Game Rules & Guide" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/hint.png') }}';">
+            </div>
+        `);
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const urlRoom = urlParams.get('room');
     if (urlRoom) {
@@ -535,6 +573,7 @@
         if (data.success) {
             currentRoom = data.room_id;
             isHost = data.is_host;
+            document.body.className = 'view-game';
             document.getElementById('home-section').classList.add('hidden');
             document.getElementById('create-section').classList.add('hidden');
             document.getElementById('join-section').classList.add('hidden');
@@ -811,6 +850,7 @@
 
     socket.on('room_created', (data) => {
         isHost = true;
+        document.body.className = 'view-game';
         document.getElementById('home-section').classList.add('hidden');
         document.getElementById('create-section').classList.add('hidden');
         document.getElementById('join-section').classList.add('hidden');
@@ -824,6 +864,7 @@
     socket.on('join_pending', (data) => showModal('Request Sent', `<p>${data.message}</p>`));
 
     socket.on('join_approved', (data) => {
+        document.body.className = 'view-game';
         document.getElementById('home-section').classList.add('hidden');
         document.getElementById('create-section').classList.add('hidden');
         document.getElementById('join-section').classList.add('hidden');
