@@ -40,7 +40,6 @@
             transition: background-image 0.4s ease-in-out;
         }
 
-        /* Dynamic Page-Specific Wallpapers */
         body.view-home {
             background-image: linear-gradient(rgba(10, 12, 16, 0.65), rgba(10, 12, 16, 0.65)), url("{{ url_for('static', filename='images/home_bg.jpg') }}");
         }
@@ -224,7 +223,7 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px);
         }
         .modal-box {
-            background: #141822; padding: 24px; border-radius: 18px; max-width: 620px; width: 92%; max-height: 90vh; overflow-y: auto; text-align: center; border: 2px solid var(--accent-gold); box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+            background: #141822; padding: 24px; border-radius: 18px; max-width: 650px; width: 92%; max-height: 90vh; overflow-y: auto; text-align: center; border: 2px solid var(--accent-gold); box-shadow: 0 15px 40px rgba(0,0,0,0.9);
         }
         #qrcode-canvas { margin: 15px auto; background: #fff; padding: 10px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .copy-link-box { display: flex; gap: 8px; margin-top: 10px; }
@@ -250,7 +249,7 @@
 </div>
 
 <div class="container">
-    <!-- HOMEPAGE SECTION (2 Main Buttons) -->
+    <!-- HOMEPAGE SECTION -->
     <div id="home-section" class="card-panel">
         <div class="lounge-header">
             <h1>♠ Texas Hold'em Lounge ♣</h1>
@@ -746,38 +745,56 @@
         }
 
         let ccHtml = (lastHandDataObj.community_cards || []).map(c => renderCardGraphic(c)).join('');
+        
+        let winnerBannerText = "";
+        if (lastHandDataObj.is_split) {
+            winnerBannerText = `🏆 Split Pot! Won by <span style="color:#f1c40f;">${lastHandDataObj.winner}</span> — $${(lastHandDataObj.split_amount || 0).toFixed(0)} each from $${lastHandDataObj.pot.toFixed(0)} pot.`;
+        } else {
+            winnerBannerText = `🏆 Winner: <span style="color:#f1c40f;">${lastHandDataObj.winner}</span> won $${lastHandDataObj.pot.toFixed(0)}!`;
+        }
+
         let playersHtml = (lastHandDataObj.players_show || []).map(p => {
             let holeCardsHtml = (p.hole_cards || []).map(c => renderCardGraphic(c)).join('');
             let bestFiveHtml = (p.best_five || []).map(c => renderCardGraphic(c)).join('');
-            let payoutStr = (p.payout && p.payout > 0) ? ` <span style="color:#2ecc71; font-weight:bold;">(+${p.payout.toFixed(0)})</span>` : '';
+            let payoutStr = (p.payout && p.payout > 0) ? ` <span style="color:#2ecc71; font-weight:bold;">(+${p.payout.toFixed(0)} won)</span>` : '';
+            let isWinnerHighlight = (p.payout && p.payout > 0) ? 'border: 2px solid var(--accent-gold-bright); background: rgba(241, 196, 15, 0.08);' : 'background:#1a1d26;';
+
             return `
-                <div style="background:#1a1d26; padding:10px; border-radius:8px; margin:8px 0; text-align:left;">
+                <div style="${isWinnerHighlight} padding:10px; border-radius:8px; margin:8px 0; text-align:left;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                         <div>
                             <strong>${p.avatar || '😎'} ${p.name}</strong>${payoutStr}
-                            <div style="font-size:12px; color:var(--accent-gold-bright);">Evaluation: ${p.eval}</div>
+                            <div style="font-size:12px; color:var(--accent-gold-bright); margin-top:2px;">Hand Evaluation: ${p.eval}</div>
                         </div>
                     </div>
                     ${p.folded ? '<div style="font-size:12px; color:#e74c3c;">Folded</div>' : `
-                        <div style="font-size:11px; color:#aaa; margin-top:4px;">Hole Cards:</div>
-                        <div style="display:flex; gap:3px; margin-bottom:4px;">${holeCardsHtml}</div>
-                        ${bestFiveHtml ? `
-                            <div style="font-size:11px; color:var(--accent-gold); margin-top:4px;">Best 5-Card Hand:</div>
-                            <div style="display:flex; gap:3px;">${bestFiveHtml}</div>
-                        ` : ''}
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 6px;">
+                            <div>
+                                <div style="font-size:11px; color:#aaa; margin-bottom:2px;">Hole Cards:</div>
+                                <div style="display:flex; gap:3px;">${holeCardsHtml}</div>
+                            </div>
+                            ${bestFiveHtml ? `
+                                <div>
+                                    <div style="font-size:11px; color:var(--accent-gold); margin-bottom:2px;">Best 5-Card Combination:</div>
+                                    <div style="display:flex; gap:3px;">${bestFiveHtml}</div>
+                                </div>
+                            ` : ''}
+                        </div>
                     `}
                 </div>
             `;
         }).join('');
 
         showModal('Hand Result Breakdown & Payouts', `
+            <div style="background: rgba(243, 156, 18, 0.15); border: 1px solid var(--accent-gold); padding: 10px; border-radius: 10px; margin-bottom: 12px; font-size: 14px; font-weight: bold;">
+                ${winnerBannerText}
+            </div>
             <div style="margin-bottom:12px;">
                 <h4 style="margin:5px 0; color:var(--accent-gold-bright);">Community Board</h4>
                 <div style="display:flex; justify-content:center; gap:4px;">${ccHtml || 'None'}</div>
-                <p style="margin:6px 0; font-size:13px; color:#2ecc71; font-weight:bold;">Total Pot: $${lastHandDataObj.pot.toFixed(0)} (${(lastHandDataObj.split_amount || 0).toFixed(0)} per winner)</p>
             </div>
             <div>
-                <h4 style="margin:5px 0; color:#fff;">Players & Best 5-Card Combinations</h4>
+                <h4 style="margin:5px 0; color:#fff;">Players, Hole Cards & Best 5-Card Combinations</h4>
                 ${playersHtml}
             </div>
         `);
