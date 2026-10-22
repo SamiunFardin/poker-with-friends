@@ -1,5 +1,6 @@
 import random
 import time
+import itertools
 from treys import Card, Evaluator
 
 evaluator = Evaluator()
@@ -281,15 +282,17 @@ class GameRoom:
             self.last_hand_data = {
                 'winner': winner.name,
                 'pot': self.pot,
-                'payout_info': [{ 'name': winner.name, 'amount': self.pot }],
+                'split_amount': self.pot,
+                'is_split': False,
                 'community_cards': [c.to_dict() for c in self.community_cards],
                 'players_show': [{
                     'name': p.name,
                     'avatar': p.avatar,
                     'folded': p.folded,
                     'hole_cards': [c.to_dict() for c in p.hole_cards],
-                    'best_5_cards': [],
-                    'eval': 'Folded' if p.folded else 'Winner (Uncontested)'
+                    'best_five': [],
+                    'payout': self.pot if p.name == winner.name else 0.0,
+                    'eval': 'Folded' if p.folded else f'Winner (Uncontested) - Won ${self.pot:.2f}'
                 } for p in self.players.values()]
             }
             self.last_hand_summary = summary
@@ -362,8 +365,6 @@ class GameRoom:
         summary_lines = []
         player_eval_list = []
 
-        all_7_cards_dict = {c.to_treys_str(): c for c in self.community_cards}
-
         for p in self.players.values():
             if p.folded:
                 player_eval_list.append({
@@ -371,48 +372,40 @@ class GameRoom:
                     'avatar': p.avatar,
                     'folded': True,
                     'hole_cards': [c.to_dict() for c in p.hole_cards],
-                    'best_5_cards': [],
+                    'best_five': [],
+                    'payout': 0.0,
                     'eval': 'Folded'
                 })
                 continue
-
-            p_cards_dict = dict(all_7_cards_dict)
-            for c in p.hole_cards:
-                p_cards_dict[c.to_treys_str()] = c
 
             hand_treys = [Card.new(c.to_treys_str()) for c in p.hole_cards]
             score = evaluator.evaluate(board_treys, hand_treys)
             rank_class = evaluator.get_rank_class(score)
             class_str = evaluator.class_to_string(rank_class)
 
-            # Determine best 5-card combination from 7 available
-            combo_7 = board_treys + hand_treys
-            best_combo_score = 99999
-            best_5_treys = []
-
-            from itertools import combinations
-            for combo in combinations(combo_7, 5):
-                # Using treys evaluator internal score calculation for 5 cards
-                c_score = evaluator._five(list(combo))
-                if c_score < best_combo_score:
-                    best_combo_score = c_score
-                    best_5_treys = list(combo)
-
-            best_5_models = []
-            for t_val in best_5_treys:
-                str_rep = Card.int_to_str(t_val)
-                if str_rep in p_cards_dict:
-                    best_5_models.append(p_cards_dict[str_rep].to_dict())
-
-            summary_lines.append(f"• {p.name}: {class_str}")
+            all_seven = p.hole_cards + self.community_cards
+            best_five_cards = []
+            if len(all_seven) >= 5:
+                best_sub_score = 99999
+                best_combo = None
+                for combo in itertools.combinations(all_seven, 5):
+                    combo_list = list(combo)
+                    c_treys = [Card.new(c.to_treys_str()) for c in combo_list]
+                    sub_score = evaluator.evaluate(c_treys[:3], c_treys[3:])
+                    if sub_score < best_sub_score:
+                        best_sub_score = sub_score
+                        best_combo = combo_list
+                if best_combo:
+                    best_five_cards = [c.to_dict() for c in best_combo]
 
             player_eval_list.append({
                 'name': p.name,
                 'avatar': p.avatar,
                 'folded': False,
                 'hole_cards': [c.to_dict() for c in p.hole_cards],
-                'best_5_cards': best_5_models,
-                'eval': class_str
+                'best_five': best_five_cards,
+                'eval': class_str,
+                'score': score
             })
 
             if score < best_score:
@@ -422,25 +415,31 @@ class GameRoom:
                 winners.append(p)
 
         split_pot = self.pot / len(winners)
-        payout_info = []
         winner_names = ", ".join(w.name for w in winners)
-
         for w in winners:
             w.chips += split_pot
-            payout_info.append({ 'name': w.name, 'amount': split_pot })
+
+        for item in player_eval_list:
+            if not item['folded']:
+                matching_winner = next((w for w in winners if w.name == item['name']), None)
+                if matching_winner:
+                    item['payout'] = split_pot
+                    item['eval'] = f"{item['eval']} — WINNER (Won ${split_pot:.2f})"
+                else:
+                    item['payout'] = 0.0
 
         self.winning_cards = []
         for w in winners:
             for c in w.hole_cards:
                 self.winning_cards.append(c.to_dict())
 
-        payout_str = " | ".join([f"{item['name']}: +${item['amount']:.2f}" for item in payout_info])
-        final_summary = f"🏆 WINNER(S): {winner_names}\n💰 PAYOUTS: {payout_str}\n\nEVALUATION:\n" + "\n".join(summary_lines)
+        final_summary = f"🏆 WINNER(S): {winner_names}\n💰 TOTAL POT: ${self.pot:.2f} (${split_pot:.2f} each)\n\nEVALUATION:\n" + "\n".join([f"• {p['name']}: {p['eval']}" for p in player_eval_list if not p['folded']])
         
         self.last_hand_data = {
             'winner': winner_names,
             'pot': self.pot,
-            'payout_info': payout_info,
+            'split_amount': split_pot,
+            'is_split': len(winners) > 1,
             'community_cards': [c.to_dict() for c in self.community_cards],
             'players_show': player_eval_list
         }
